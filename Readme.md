@@ -66,8 +66,5 @@ with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:
 print(prof.key_averages().table(sort_by="cuda_time_total"))
 ```
 
-### Running in Colab:
-This Python code can be directly executed in your Google Colab notebook. Be sure to enable the GPU in **Runtime > Change runtime type > GPU**.
-
 ### Running C++ Code  
-The C++ examples must be run locally, as Google Colab does not support C++/CUDA out of the box. If you need to test C++ code, it's recommended to set up a local development environment with **CUDA Toolkit**.
+The C++ examples must be run locally, as Google Colab does not support C++/CUDA out of the box. If you need to test C++ code, it's recommended to set up a local development environment with **CUDA Toolkit**. For Python, you can run the code directly in your Google Colab notebook as described above and make sure to enable the GPU in  **Runtime > Change runtime type > GPU**.
