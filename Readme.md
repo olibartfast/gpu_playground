@@ -1,86 +1,119 @@
-# GPU Testing with Python and C++  
-GPU programming and testing using Python and C++. The examples are inspired by resources from the [GPU Mode Group](https://www.youtube.com/channel/UCJgIbYl6C5no72a0NUAPcTA)
-## Prerequisites  
-Before diving into the code snippets, ensure the following tools are installed:
-- **CUDA Toolkit** (for both Python and C++ development)
-- **PyTorch or TensorFlow** (for Python-based GPU testing)
-- **A CUDA-capable GPU** and appropriate drivers
-- **CMake** and **gcc/g++** (for C++ development)
-If you don't have a local GPU available, you can easily run the Python examples on **Google Colab**, which offers free access to GPUs.
-### Installing Required Libraries
-For Python:
+# GPU Testing with Python, C++, and Mojo
+
+This guide expands on GPU programming and testing using Python, C++, and introduces Mojo, a high-performance programming language designed for AI and systems programming with GPU support. The examples are inspired by resources from the GPU Mode Group.
+
+## Prerequisites
+
+Ensure the following tools are installed:
+
+- CUDA Toolkit (for Python, C++, and Mojo development)
+- PyTorch or TensorFlow (for Python-based GPU testing)
+- A CUDA-capable GPU and appropriate drivers
+- CMake and `gcc`/`g++` (for C++ development)
+- Mojo SDK (for Mojo development, available from Modular)
+
+> **Note:** If no local GPU is available, Python examples can run on Google Colab with free GPU access.
+
+---
+
+## Installing Required Libraries
+
+### For Python:
+
 ```bash
 pip install torch  # or tensorflow-gpu
 pip install tinygrad  # for TinyGrad
 pip install triton  # for OpenAI Triton
-```
-For C++ (ensure CUDA is set up in your environment):
+````
+
+### For C++ (ensure CUDA is set up):
+
 ```bash
 sudo apt-get install nvidia-cuda-toolkit
 ```
-## Running on Google Colab  
-Google Colab offers free access to a GPU, and the Python code can be executed directly there with minimal setup. Follow these steps:
-1. Go to [Google Colab](https://colab.research.google.com/).
+
+### For Mojo:
+
+* Install the Mojo SDK by following instructions from Modular's official documentation.
+* Ensure CUDA support is configured for GPU acceleration (requires Modular's GPU-enabled Mojo distribution).
+
+---
+
+## Running on Google Colab
+
+Google Colab offers free GPU access for Python code with minimal setup:
+
+1. Go to [Google Colab](https://colab.research.google.com).
 2. Open a new notebook.
-3. Enable the GPU by navigating to **Runtime > Change runtime type** and selecting **GPU**.
-4. Run the following code snippets directly in Colab.
-## Example 1: GPU Testing with Python (PyTorch)  
-We begin with a simple GPU-accelerated tensor operation using **PyTorch**:
+3. Enable GPU: `Runtime > Change runtime type > GPU`.
+4. Run Python snippets directly in Colab.
+
+> **Note:** Mojo and C++ code require a local environment, as Colab does not support them natively.
+
+---
+
+## Example 1: GPU Testing with Python (PyTorch)
+
+Simple GPU-accelerated tensor operation using PyTorch:
+
 ```python
 import torch
-# Check if GPU is available
+
+# Check GPU availability
 if torch.cuda.is_available():
     device = torch.device('cuda')
-    print("GPU available: ", torch.cuda.get_device_name(0))
+    print("GPU available:", torch.cuda.get_device_name(0))
 else:
     device = torch.device('cpu')
     print("Running on CPU")
-# Create a tensor on the GPU
+
+# Create tensor on GPU
 tensor = torch.rand(1000, 1000, device=device)
-# Perform a simple operation
 result = torch.matmul(tensor, tensor)
-print("Result on GPU: ", result)
+print("Result on GPU:", result)
 ```
-### Profiling CUDA Kernels in Python  
-You can profile CUDA kernel operations to measure GPU performance using PyTorch's profiler:
+
+---
+
+### Profiling CUDA Kernels in Python
+
 ```python
 import torch
 from torch.profiler import profile, ProfilerActivity
-# Enable CUDA profiling
+
 with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:
     tensor = torch.rand(1000, 1000, device='cuda')
     result = torch.matmul(tensor, tensor)
 print(prof.key_averages().table(sort_by="cuda_time_total"))
 ```
 
+---
+
 ## Example 2: TinyGrad - Lightweight GPU Acceleration
 
-TinyGrad is a minimalist neural network library designed with simplicity and educational purposes in mind. It provides GPU acceleration with a clean and readable codebase.
+TinyGrad is a minimalist neural network library for GPU acceleration.
 
 ```python
 from tinygrad.tensor import Tensor
-import numpy as np
 
-# Check if GPU is available
+# Check GPU availability
 print(f"Using GPU: {Tensor.gpu}")
 
 # Create tensors
 a = Tensor.rand(1024, 1024)
 b = Tensor.rand(1024, 1024)
-
-# Perform operations
 result = a.matmul(b)
 print(result.shape)
 
-# Basic neural network operations
+# Basic neural network
 x = Tensor.rand(128, 10)
 W = Tensor.rand(10, 20)
 b = Tensor.rand(20)
-
-# Forward pass
 out = x.matmul(W).add(b)
 print(out.shape)
 ```
+
+---
 
 ### TinyGrad with CUDA Performance Testing
 
@@ -109,9 +142,11 @@ print(f"FLOPS: {2 * size**3 / (end_time - start_time):.2e}")
 print(GlobalCounters.print_hot())
 ```
 
-## Example 3: OpenAI Triton - GPU Programming Made Accessible
+---
 
-Triton is a language and compiler designed to make GPU programming more accessible to AI researchers and engineers. It simplifies writing efficient GPU kernels.
+## Example 3: OpenAI Triton - Accessible GPU Programming
+
+Triton simplifies GPU kernel programming for AI tasks.
 
 ```python
 import torch
@@ -120,92 +155,57 @@ import triton.language as tl
 
 @triton.jit
 def matmul_kernel(
-    # Pointers to matrices
-    a_ptr, b_ptr, c_ptr,
-    # Matrix dimensions
-    M, N, K,
-    # Block sizes
+    a_ptr, b_ptr, c_ptr, M, N, K,
     BLOCK_SIZE_M: tl.constexpr, BLOCK_SIZE_N: tl.constexpr, BLOCK_SIZE_K: tl.constexpr,
 ):
-    # Matrix multiplication kernel implementation
     pid = tl.program_id(axis=0)
     num_pid_m = tl.cdiv(M, BLOCK_SIZE_M)
     num_pid_n = tl.cdiv(N, BLOCK_SIZE_N)
-    num_pid_k = tl.cdiv(K, BLOCK_SIZE_K)
-    
-    # Calculate the group ID and the start indices for this block
     pid_m = pid // num_pid_n
     pid_n = pid % num_pid_n
-    
-    # Calculate the start indices for this block
     m_start = pid_m * BLOCK_SIZE_M
     n_start = pid_n * BLOCK_SIZE_N
-    
-    # Create pointers to the input and output tensors
     a_ptrs = a_ptr + m_start * K + tl.arange(0, BLOCK_SIZE_M)[:, None] * K + tl.arange(0, BLOCK_SIZE_K)[None, :]
     b_ptrs = b_ptr + tl.arange(0, BLOCK_SIZE_K)[:, None] * N + n_start + tl.arange(0, BLOCK_SIZE_N)[None, :]
     c_ptrs = c_ptr + m_start * N + n_start + tl.arange(0, BLOCK_SIZE_M)[:, None] * N + tl.arange(0, BLOCK_SIZE_N)[None, :]
-    
-    # Initialize accumulator
     acc = tl.zeros((BLOCK_SIZE_M, BLOCK_SIZE_N), dtype=tl.float32)
-    
-    # Iterate through k dimension
     for k in range(0, tl.cdiv(K, BLOCK_SIZE_K)):
         a = tl.load(a_ptrs)
         b = tl.load(b_ptrs)
         acc += tl.dot(a, b)
         a_ptrs += BLOCK_SIZE_K
         b_ptrs += BLOCK_SIZE_K * N
-    
-    # Store the result
     tl.store(c_ptrs, acc)
 
-# Function to use the kernel
 def matmul(a, b):
-    # Get tensor dimensions
     M, K = a.shape
     K, N = b.shape
-    
-    # Allocate output tensor
     c = torch.empty((M, N), device=a.device, dtype=a.dtype)
-    
-    # Define grid and block sizes
     BLOCK_SIZE_M = 16
     BLOCK_SIZE_N = 16
     BLOCK_SIZE_K = 16
-    
-    # Launch kernel
     grid = lambda META: (triton.cdiv(M, BLOCK_SIZE_M) * triton.cdiv(N, BLOCK_SIZE_N),)
-    matmul_kernel[grid](
-        a, b, c,
-        M, N, K,
-        BLOCK_SIZE_M, BLOCK_SIZE_N, BLOCK_SIZE_K
-    )
-    
+    matmul_kernel[grid](a, b, c, M, N, K, BLOCK_SIZE_M, BLOCK_SIZE_N, BLOCK_SIZE_K)
     return c
+```
 
-# Test the custom kernel
+### Test Kernel
+
+```python
 a = torch.randn((1024, 1024), device='cuda', dtype=torch.float32)
 b = torch.randn((1024, 1024), device='cuda', dtype=torch.float32)
-
-# Run both PyTorch and Triton implementations
 c_torch = torch.matmul(a, b)
 c_triton = matmul(a, b)
-
-# Verify the results
 print(f"Max difference: {(c_torch - c_triton).abs().max().item()}")
 ```
+
+---
 
 ### Benchmarking Triton vs PyTorch
 
 ```python
-import torch
-import triton
 import time
 
-# Previous matmul function and kernel definitions...
-
-# Benchmarking
 sizes = [512, 1024, 2048, 4096]
 torch_times = []
 triton_times = []
@@ -242,12 +242,121 @@ for size in sizes:
     print("-" * 30)
 ```
 
-### Running C++ Code  
-The C++ examples must be run locally, as Google Colab does not support C++/CUDA out of the box. If you need to test C++ code, it's recommended to set up a local development environment with **CUDA Toolkit**. For Python, you can run the code directly in your Google Colab notebook as described above and make sure to enable the GPU in  **Runtime > Change runtime type > GPU**.
+---
 
-## Further resources and references
-* https://github.com/gpu-mode
-* https://leetgpu.com/
-* https://github.com/tinygrad/tinygrad
-* https://github.com/triton-lang/triton
-* https://github.com/NVIDIA/cuda-samples
+## Example 4: GPU Testing with Mojo
+
+> **Note:** Mojo requires a local environment with the Mojo SDK and CUDA installed. This code cannot run on Google Colab.
+
+```mojo
+from math import div_ceil
+from memory import memset_zero
+from sys.intrinsics import strided_load
+from sys import num_physical_cores
+from algorithm import parallelize
+from time import now
+
+struct Matrix:
+    var rows: Int
+    var cols: Int
+    var data: DTypePointer[DType.float32]
+
+    fn __init__(inout self, rows: Int, cols: Int):
+        self.rows = rows
+        self.cols = cols
+        self.data = DTypePointer[DType.float32].alloc(rows * cols)
+        memset_zero(self.data, rows * cols)
+
+    fn __del__(owned self):
+        self.data.free()
+
+    @staticmethod
+    fn rand(rows: Int, cols: Int) -> Matrix:
+        let m = Matrix(rows, cols)
+        for i in range(rows * cols):
+            m.data[i] = Float32(randf())
+        return m
+
+    fn matmul(self, other: Matrix) -> Matrix:
+        let result = Matrix(self.rows, other.cols)
+        @parameter
+        fn p(i: Int):
+            for j in range(result.cols):
+                var sum = Float32(0.0)
+                for k in range(self.cols):
+                    sum += self.data[i * self.cols + k] * other.data[k * other.cols + j]
+                result.data[i * result.cols + j] = sum
+        parallelize[p](result.rows, num_physical_cores())
+        return result
+
+fn matmul_gpu(a: Matrix, b: Matrix) -> Matrix:
+    let M = a.rows
+    let N = b.cols
+    let K = a.cols
+    let result = Matrix(M, N)
+
+    @cuda
+    fn matmul_kernel(a_ptr, b_ptr, c_ptr, M, N, K):
+        let tid_x = cuda.thread_idx_x()
+        let tid_y = cuda.thread_idx_y()
+        let block_x = cuda.block_idx_x()
+        let block_y = cuda.block_idx_y()
+        let BLOCK_SIZE = 16
+        var sum = Float32(0.0)
+        for k in range(0, K):
+            sum += a_ptr[block_y * BLOCK_SIZE + tid_y, k] * b_ptr[k, block_x * BLOCK_SIZE + tid_x]
+        c_ptr[block_y * BLOCK_SIZE + tid_y, block_x * BLOCK_SIZE + tid_x] = sum
+
+    let grid_x = div_ceil(N, 16)
+    let grid_y = div_ceil(M, 16)
+    matmul_kernel[(grid_y, grid_x, 1), (16, 16, 1)](a.data, b.data, result.data, M, N, K)
+    return result
+
+fn main():
+    let size = 1024
+    let a = Matrix.rand(size, size)
+    let b = Matrix.rand(size, size)
+    
+    let start = now()
+    let c = a.matmul(b)
+    let cpu_time = (now() - start) / 1e9
+    print("CPU Matrix multiplication:", cpu_time, "seconds")
+    
+    let start_gpu = now()
+    let c_gpu = matmul_gpu(a, b)
+    let gpu_time = (now() - start_gpu) / 1e9
+    print("GPU Matrix multiplication:", gpu_time, "seconds")
+    print("Speedup:", cpu_time / gpu_time, "x")
+```
+
+---
+
+## Notes on Mojo
+
+* **GPU Support**: Mojo's CUDA integration is provided through Modular's SDK. Ensure the GPU-enabled version is installed.
+* **Performance**: Mojo is designed for high performance, often approaching C++ speeds while being more Python-like in syntax.
+* **Setup**: Follow Modular's setup guide for Mojo and CUDA.
+* **Limitations**: As of May 2025, Mojo's GPU features are evolving. Verify CUDA support in the latest Mojo SDK release.
+
+---
+
+## Running C++ and Mojo Code
+
+* **C++**: Requires a local CUDA environment (CUDA Toolkit, NVIDIA drivers). Use `nvcc` to compile CUDA C++ code. Examples are available in NVIDIA CUDA Samples.
+* **Mojo**: Requires the Mojo SDK and CUDA setup locally. Compile and run using the `mojo` command-line tool (see Modular Docs).
+* **Colab Limitation**: Python examples (PyTorch, TinyGrad, Triton) can run on Colab with GPU enabled. C++ and Mojo require local setups.
+
+---
+
+## Further Resources and References
+
+* [GPU Mode GitHub](https://github.com/gpu-mode)
+* [LeetGPU](https://leetgpu.com)
+* [TinyGrad GitHub](https://github.com/geohot/tinygrad)
+* [Triton GitHub](https://github.com/openai/triton)
+* [NVIDIA CUDA Samples](https://github.com/NVIDIA/cuda-samples)
+* [Mojo Documentation](https://docs.modular.com/mojo)
+* [Modular CUDA Setup Guide](https://www.modular.com/mojo)
+
+
+
