@@ -1,6 +1,6 @@
-# nvcc -x cu -o reverse reverse.cpp -std=c++17
-# on tesla T4 GPU
-# nvcc -x cu -arch=compute_70 -code=sm_70,compute_70 -std=c++17 -o reverse reverse.cpp
+// nvcc -x cu -o reverse reverse.cpp -std=c++17
+// on tesla T4 GPU
+// nvcc -x cu -arch=compute_70 -code=sm_70,compute_70 -std=c++17 -o reverse reverse.cpp
 #include <iostream>
 #include <chrono>
 #include <cuda_runtime.h>
