@@ -1,4 +1,4 @@
-# nvcc -x cu -o reverse reverse.cpp -std=c++17 -O3 -Xcompiler 
+# nvcc -x cu -o reverse reverse.cpp -std=c++17
 # on tesla T4 GPU
 # nvcc -x cu -arch=compute_70 -code=sm_70,compute_70 -std=c++17 -o reverse reverse.cpp
 #include <iostream>
