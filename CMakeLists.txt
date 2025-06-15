@@ -5,3 +5,4 @@ project(gpu_playground
     LANGUAGES CXX CUDA)
 add_subdirectory(reverse_array)
 add_subdirectory(matrix_transpose)
+add_subdirectory(softmax)
