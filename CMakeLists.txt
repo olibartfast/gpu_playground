@@ -4,3 +4,4 @@ project(gpu_playground
     DESCRIPTION "A playground for GPU programming"
     LANGUAGES CXX CUDA)
 add_subdirectory(reverse_array)
+add_subdirectory(matrix_transpose)
