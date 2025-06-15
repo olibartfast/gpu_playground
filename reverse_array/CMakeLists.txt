@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.20)
 # Enable CUDA for this directory
 enable_language(CUDA)
 
+# Set CUDA language property for source files
+set_source_files_properties(reverse.cpp PROPERTIES LANGUAGE CUDA)
+
 # Create the reverse array executable
 add_executable(reverse_array reverse.cpp)
 

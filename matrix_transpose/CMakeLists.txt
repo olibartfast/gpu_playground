@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.20)
 # Enable CUDA for this directory
 enable_language(CUDA)
 
+# Set CUDA language property for source files
+set_source_files_properties(matrix_transpose.cpp PROPERTIES LANGUAGE CUDA)
+
 # Create the matrix transpose executable
 add_executable(matrix_transpose matrix_transpose.cpp)
 
