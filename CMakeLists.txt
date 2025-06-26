@@ -6,3 +6,4 @@ project(gpu_playground
 add_subdirectory(reverse_array)
 add_subdirectory(matrix_transpose)
 add_subdirectory(softmax)
+add_subdirectory(prefix_sum)
