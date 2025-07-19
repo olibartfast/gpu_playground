@@ -1,6 +1,6 @@
-# GPU Testing with Python, C++, and Mojo
+# GPU Testing 
 
-This repository contains examples and utilities for GPU programming using Python, C++, and Mojo. The examples are inspired by resources from the GPU Mode Group.
+This repository contains examples and utilities for GPU programming experimenting mainly with Python, C++ and other gpu computin libraries. The examples are inspired by resources from the GPU Mode Group.
 
 ## Prerequisites
 
