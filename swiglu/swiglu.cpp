@@ -97,10 +97,9 @@ int main() {
     #ifdef PRINT
     print(output_cpu.data(), N/2, "CPU SwiGLU");  // Only print first half as SwiGLU reduces dimension
     #endif
-    
-    std::cout << "CPU time: " << std::chrono::duration<double, std::milli>(end_cpu - start_cpu).count() << " ms" << std::endl << std::endl;
-    std::cout << "CPU time: " << std::chrono::duration<double, std::milli>(end_cpu - start_cpu).count() << " ms" << std::endl << std::endl;
 
+    std::cout << "CPU time: " << std::chrono::duration<double, std::milli>(end_cpu - start_cpu).count() << " ms" << std::endl << std::endl;
+    
     // --- GPU SwiGLU ---
     float *d_input, *d_output;
     cudaMalloc(&d_input, sizeof(float) * N);
