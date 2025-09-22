@@ -6,13 +6,11 @@
 #include <iomanip>
 #include <vector>
 
-#define PRINT // Comment this out for large N to avoid printing thousands of numbers
-
+#define PRINT 
 #define BSIZE 256
 
 void swiglu(const float* d_input, float* d_output, int N);
 
-// Function to print the array
 void print(const float* input, int N, const std::string& message = "") {
     if (!message.empty()) {
         std::cout << message << ": ";
@@ -48,7 +46,6 @@ void swiglu_cpu(const float* input, float* output, int N) {
 }
 
 
-// Host-side orchestrator for the efficient GPU softmax
 void swiglu(const float* d_input, float* d_output, int N) {
     int threadsPerBlock = BSIZE;
     // We only need half as many threads since each thread processes two elements
