@@ -5,7 +5,6 @@
 #include <cmath>
 #include <iomanip>
 #include <vector>
-#include <float.h> // For FLT_MAX
 
 #define PRINT // Comment this out for large N to avoid printing thousands of numbers
 
